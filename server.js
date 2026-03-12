@@ -30,8 +30,17 @@ mongoose
     .connect(process.env.MONGO_URI)
     .then(() => {
         console.log('✅ Connected to MongoDB');
-        app.listen(PORT, () => {
+        const server = app.listen(PORT, () => {
             console.log(`🚀 Server running on http://localhost:${PORT}`);
+        }).on('error', (err) => {
+            if (err.code === 'EADDRINUSE') {
+                console.error(`❌ Port ${PORT} is busy. Trying ${parseInt(PORT) + 1}...`);
+                app.listen(parseInt(PORT) + 1, () => {
+                    console.log(`🚀 Server running on http://localhost:${parseInt(PORT) + 1}`);
+                });
+            } else {
+                console.error('❌ Server error:', err);
+            }
         });
     })
     .catch((err) => {
